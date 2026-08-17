@@ -1,0 +1,1764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Electronic Bill</title>
+
+<!-- Google Fonts: Playfair Display (display) + Poppins (body/UI) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* ============================================================
+     DESIGN TOKENS
+     Background: White | Primary: Deep Gold | Secondary: Dark Green
+     Accent: Black | Surface: warm cream (for card depth on white)
+     ============================================================ */
+  :root{
+    --gold: #C89B3C;
+    --gold-light: #E4C577;
+    --gold-dark: #9C7529;
+    --green: #1F6B3A;
+    --green-dark: #144D29;
+    --black: #171512;
+    --white: #FFFFFF;
+    --cream: #FDFBF6;
+    --cream-2: #F7F2E7;
+    --line: #E8DFC9;
+    --shadow-soft: 0 10px 30px rgba(23,21,18,0.08), 0 2px 8px rgba(23,21,18,0.05);
+    --shadow-lift: 0 18px 44px rgba(23,21,18,0.14), 0 4px 12px rgba(23,21,18,0.08);
+    --radius-lg: 22px;
+    --radius-md: 14px;
+    --radius-sm: 8px;
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  /* ============================================================
+     COLOR SCHEMES
+     Every color in this app is drawn from the tokens above, so each
+     scheme below only needs to remap those same tokens — no other
+     rule anywhere in the stylesheet changes between schemes.
+     ============================================================ */
+
+  /* Scheme 2: Red + White + Black */
+  html[data-theme="red"]{
+    --gold: #B3261E;
+    --gold-light: #D8544B;
+    --gold-dark: #7E1B15;
+    --green: #171512;
+    --green-dark: #000000;
+    --black: #171512;
+    --white: #FFFFFF;
+    --cream: #FFFBFA;
+    --cream-2: #FBEDEC;
+    --line: #EFD8D6;
+    --shadow-soft: 0 10px 30px rgba(23,21,18,0.08), 0 2px 8px rgba(23,21,18,0.05);
+    --shadow-lift: 0 18px 44px rgba(23,21,18,0.14), 0 4px 12px rgba(23,21,18,0.08);
+  }
+
+  /* Scheme 3: Orange + White */
+  html[data-theme="orange"]{
+    --gold: #E06B1F;
+    --gold-light: #F5964F;
+    --gold-dark: #A84E14;
+    --green: #C4531A;
+    --green-dark: #8F3B12;
+    --black: #241A12;
+    --white: #FFFFFF;
+    --cream: #FFFBF7;
+    --cream-2: #FCEEE2;
+    --line: #F1DCC5;
+    --shadow-soft: 0 10px 30px rgba(36,26,18,0.08), 0 2px 8px rgba(36,26,18,0.05);
+    --shadow-lift: 0 18px 44px rgba(36,26,18,0.14), 0 4px 12px rgba(36,26,18,0.08);
+  }
+
+  /* Scheme 4: Black & White (black background) */
+  html[data-theme="mono"]{
+    --gold: #E7E7E7;
+    --gold-light: #FFFFFF;
+    --gold-dark: #B7B7B7;
+    --green: #CFCFCF;
+    --green-dark: #FFFFFF;
+    --black: #F5F5F5;
+    --white: #0A0A0A;
+    --cream: #141414;
+    --cream-2: #1D1D1D;
+    --line: #3A3A3A;
+    --shadow-soft: 0 10px 30px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3);
+    --shadow-lift: 0 18px 44px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.35);
+  }
+
+  /* Scheme 5: Red + Black (pure red background, black accents/text) */
+  html[data-theme="redblack"]{
+    --gold: #171512;
+    --gold-light: #3A3230;
+    --gold-dark: #000000;
+    --green: #171512;
+    --green-dark: #000000;
+    --black: #171512;
+    --white: #FF0000;
+    --cream: #FF0000;
+    --cream-2: #E60000;
+    --line: #B30000;
+    --shadow-soft: 0 10px 30px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3);
+    --shadow-lift: 0 18px 44px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.35);
+  }
+
+  *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html,body{
+    margin:0; padding:0;
+    background: var(--white);
+    color: var(--black);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+  }
+
+  body{
+    min-height:100vh;
+    padding: 18px 14px 48px;
+  }
+
+  ::selection{ background: var(--gold-light); color: var(--black); }
+
+  /* Respect reduced motion preference */
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+
+  .app-shell{
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  /* ============================================================
+     TOP MASTHEAD (shown above the form)
+     ============================================================ */
+  .masthead{
+    text-align:center;
+    padding: 22px 10px 26px;
+    position: relative;
+  }
+  .masthead::after{
+    content:"";
+    display:block;
+    width: 86px; height: 3px;
+    margin: 16px auto 0;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    border-radius: 3px;
+  }
+  .masthead .kicker{
+    font-family: var(--font-body);
+    letter-spacing: 4px;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--gold-dark);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .masthead h1{
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(28px, 8vw, 40px);
+    letter-spacing: 0.5px;
+    margin: 0;
+    color: var(--black);
+    line-height: 1.1;
+  }
+  .masthead .tagline{
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
+    color: var(--green);
+    font-size: 15px;
+    margin-top: 8px;
+  }
+  .masthead .subtag{
+    font-family: var(--font-body);
+    font-weight: 600;
+    letter-spacing: 3px;
+    font-size: 11px;
+    color: var(--black);
+    text-transform: uppercase;
+    margin-top: 10px;
+    opacity: 0.55;
+  }
+
+  /* ============================================================
+     COIN BALANCE CHIP
+     ============================================================ */
+  .coin-chip{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    margin: 10px auto 0;
+    padding: 6px 16px;
+    background: var(--cream-2, #f4ecd8);
+    border: 1.5px solid var(--gold, #c9a24b);
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--black);
+    width: fit-content;
+  }
+  .coin-chip .coin-icon{
+    font-size: 15px;
+  }
+  .watch-ad-link{
+    display:block;
+    text-align:center;
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--green);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  /* ============================================================
+     SENDER NAME FIELD
+     ============================================================ */
+  .sender-name-card{
+    margin-bottom: 4px;
+  }
+  .sender-name-card input{
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+
+  .card{
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    padding: 20px 16px;
+    margin-bottom: 16px;
+  }
+  .card-title{
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 19px;
+    color: var(--green-dark);
+    display:flex;
+    align-items:center;
+    gap: 9px;
+    margin: 0 0 16px;
+  }
+  .card-title .num-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width: 26px; height:26px;
+    background: var(--green);
+    color: var(--white);
+    border-radius: 50%;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight:700;
+    flex-shrink:0;
+  }
+
+  /* ============================================================
+     THEME SWITCHER (form screen only, not part of the printed bill)
+     ============================================================ */
+  .theme-switcher{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap: 10px;
+    margin: 0 0 18px;
+  }
+  .theme-swatch{
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--line);
+    padding: 0;
+    position: relative;
+    transition: transform 0.12s ease, border-color 0.12s ease;
+  }
+  .theme-swatch:active{ transform: scale(0.92); }
+  .theme-swatch.active{
+    border-color: var(--black);
+    box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--black);
+  }
+  .theme-swatch[data-swatch="current"]{ background: linear-gradient(135deg, #C89B3C 50%, #1F6B3A 50%); }
+  .theme-swatch[data-swatch="red"]{ background: linear-gradient(135deg, #FFFFFF 50%, #B3261E 50%); }
+  .theme-swatch[data-swatch="orange"]{ background: linear-gradient(135deg, #FFFFFF 50%, #E06B1F 50%); }
+  .theme-swatch[data-swatch="mono"]{ background: linear-gradient(135deg, #0A0A0A 50%, #F5F5F5 50%); }
+  .theme-swatch[data-swatch="redblack"]{ background: linear-gradient(135deg, #FF0000 50%, #171512 50%); }
+
+  /* ============================================================
+     FORM FIELDS
+     ============================================================ */
+  label{
+    display:block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--black);
+    opacity: 0.7;
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+  .field{ margin-bottom: 14px; }
+  .field:last-child{ margin-bottom: 0; }
+
+  input[type="text"],
+  input[type="tel"],
+  input[type="date"],
+  input[type="number"],
+  select{
+    width: 100%;
+    padding: 12px 13px;
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: var(--black);
+    background: var(--white);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    outline: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus{
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3.5px rgba(200,155,60,0.18);
+  }
+  input.field-error{
+    border-color: #B3261E;
+    box-shadow: 0 0 0 3.5px rgba(179,38,30,0.12);
+  }
+  select{
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="9" viewBox="0 0 14 9"><path d="M1 1L7 7L13 1" stroke="%231F6B3A" stroke-width="2" fill="none" stroke-linecap="round"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+
+  /* ============================================================
+     BILL ROWS (mobile card-style, not a cramped table)
+     ============================================================ */
+  #rowsContainer{ display:flex; flex-direction:column; gap:12px; }
+
+  .bill-row{
+    background: var(--white);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 14px 12px 12px;
+    position: relative;
+    animation: rowIn 0.28s ease;
+  }
+  @keyframes rowIn{
+    from{ opacity:0; transform: translateY(6px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+  .bill-row .row-index{
+    position:absolute;
+    top: -9px; left: 12px;
+    background: var(--gold);
+    color: var(--white);
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+  .row-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .row-grid .span-2{ grid-column: 1 / -1; }
+  .row-grid label{ margin-bottom: 4px; font-size: 10.5px; }
+  .row-amount{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--line);
+  }
+  .row-amount .amt-label{
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--black);
+    opacity: 0.6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .row-amount .amt-value{
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--green-dark);
+  }
+  .row-delete{
+    position:absolute;
+    top: -9px; right: 10px;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: var(--black);
+    color: var(--white);
+    font-size: 13px;
+    line-height:1;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .row-delete:hover{ background:#B3261E; transform: scale(1.08); }
+  .row-delete:active{ transform: scale(0.94); }
+
+  .rows-footer{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top: 14px;
+    gap: 10px;
+  }
+  .rows-count{
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--black);
+    opacity: 0.55;
+  }
+
+  /* ============================================================
+     BUTTONS
+     ============================================================ */
+  .btn{
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 18px;
+    cursor: pointer;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap: 7px;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+    -webkit-user-select:none; user-select:none;
+  }
+  .btn:active{ transform: scale(0.97); }
+  .btn:disabled{ opacity: 0.45; cursor:not-allowed; }
+
+  .btn-add{
+    background: var(--green);
+    color: var(--white);
+    box-shadow: 0 6px 16px rgba(31,107,58,0.28);
+  }
+  .btn-add:hover:not(:disabled){ background: var(--green-dark); }
+
+  .btn-ghost{
+    background: transparent;
+    color: var(--black);
+    border: 1.5px solid var(--line);
+  }
+  .btn-ghost:hover{ border-color: var(--gold); color: var(--gold-dark); }
+
+  .btn-gold{
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    color: var(--black);
+    box-shadow: 0 8px 20px rgba(200,155,60,0.35);
+    font-weight: 700;
+    width: 100%;
+    padding: 15px 18px;
+    font-size: 15.5px;
+    letter-spacing: 0.3px;
+  }
+  .btn-gold:hover{ box-shadow: 0 10px 26px rgba(200,155,60,0.48); }
+
+  .btn-block{ width:100%; }
+
+  .btn-whatsapp{
+    background: #25D366;
+    color: var(--white);
+    box-shadow: 0 6px 16px rgba(37,211,102,0.35);
+  }
+  .btn-whatsapp:hover{ background: #1EBE5A; }
+
+  .action-row{ display:flex; gap:10px; margin-top: 6px; }
+  .action-row .btn{ flex:1; }
+
+  .error-text{
+    color:#B3261E;
+    font-size: 12.5px;
+    font-weight:500;
+    margin-top: 10px;
+    display:none;
+    background: rgba(179,38,30,0.07);
+    border: 1px solid rgba(179,38,30,0.25);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+
+  /* ============================================================
+     INVOICE VIEW
+     ============================================================ */
+  #invoiceScreen{ display:none; }
+
+  .invoice-wrap{
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lift);
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+
+  #invoiceCapture{
+    background: var(--white);
+    padding: 22px 20px 18px;
+    position: relative;
+    /* html2canvas has a known bug where it collapses spaces with certain
+       webfonts when letter-spacing is exactly "normal". A hair's-width
+       letter-spacing (imperceptible on screen) forces it onto its accurate
+       per-character text path, fixing squished-together words in the
+       exported JPG/PNG without changing how the live page looks. */
+    letter-spacing: 0.01px;
+  }
+
+  .invoice-frame{
+    padding: 4px 2px;
+    position: relative;
+  }
+
+  /* Header: title block left, ELECTRONIC BILL + meta right — matches reference exactly */
+  .invoice-head-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap: 10px;
+    border-bottom: 2.5px solid var(--green);
+    padding-bottom: 11px;
+  }
+  .invoice-head-left{ text-align:left; }
+  .invoice-head-right{ text-align:right; flex-shrink:0; }
+
+  .invoice-head-left h1{
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(19px, 6.2vw, 25px);
+    margin: 0;
+    color: var(--black);
+    letter-spacing: 0.2px;
+    line-height: 1.15;
+  }
+  .invoice-head-left .tagline{
+    font-family: var(--font-body);
+    font-style: italic;
+    color: var(--black);
+    opacity: 0.7;
+    font-size: 11px;
+    margin-top: 6px;
+    font-weight: 400;
+  }
+
+  .invoice-head-right .ebill-label{
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: clamp(13px, 4vw, 16px);
+    color: var(--green-dark);
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+  .invoice-head-right .meta-row{
+    margin-top: 8px;
+    font-size: 10.5px;
+    color: var(--black);
+  }
+  .invoice-head-right .meta-row .pl-label{
+    font-weight: 700;
+  }
+
+  /* Two-column info row: Billed To (left) / Event Date + Total Count (right) */
+  .info-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap: 12px;
+    margin-top: 13px;
+  }
+  .info-left, .info-right{ flex: 1; }
+  .info-right{ text-align:right; }
+
+  .plain-line{
+    font-size: 11.5px;
+    color: var(--black);
+    line-height: 1.6;
+  }
+  .plain-line .pl-label{
+    font-weight: 700;
+  }
+
+  .bt-name{
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--black);
+    line-height: 1.2;
+    margin-top: 2px;
+  }
+
+  .grand-total-line{
+    margin-top: 4px;
+    padding: 10px 14px;
+    background: var(--cream-2);
+    border-top: 2px solid var(--green);
+    border-bottom: 2px solid var(--green);
+    font-size: 14px;
+    font-weight: 700;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .grand-total-line .pl-label{
+    color: var(--black);
+  }
+  .grand-total-line span:last-child{
+    color: var(--black);
+    font-weight: 800;
+    font-size: 15px;
+  }
+
+
+  /* ============================================================
+     STAMP / TICKET PERFORATED EDGE (top & bottom of the bill)
+     Built from real dot elements (not a CSS gradient background) so the
+     perforation reliably shows up in the html2canvas JPG/PNG export too.
+     ============================================================ */
+  .stamp-edge{
+    height: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6px;
+  }
+  .stamp-edge-top{
+    margin: -31px -20px 16px -20px;
+  }
+  .stamp-edge-bottom{
+    margin: 16px -20px -27px -20px;
+  }
+  .stamp-dot{
+    flex: 0 0 auto;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--black);
+  }
+
+  /* Due payments line */
+  .due-line{
+    margin-top: 8px;
+    padding: 9px 14px 0;
+    font-size: 12px;
+    color: var(--black);
+    opacity: 0.85;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-top: 1px dashed var(--line);
+  }
+  .due-line .pl-label{ font-weight:700; }
+
+  /* Invoice table */
+  .invoice-table-wrap{ margin-top: 13px; }
+  table.invoice-table{
+    width:100%;
+    border-collapse: collapse;
+    font-size: 11.5px;
+  }
+  table.invoice-table thead th{
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--white);
+    background: var(--green-dark);
+    padding: 8px 8px;
+    text-align: left;
+  }
+  table.invoice-table thead th.col-num{ text-align: right; }
+  table.invoice-table tbody td{
+    padding: 8px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    color: var(--black);
+  }
+  table.invoice-table tbody td.col-num{ text-align: right; }
+  table.invoice-table tbody tr:nth-child(even){ background: var(--cream-2); }
+  table.invoice-table tbody td.amount-cell{
+    font-weight: 700;
+  }
+
+  .thanks-line{
+    text-align:center;
+    margin-top: 15px;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--green-dark);
+    letter-spacing: 0.5px;
+  }
+  .thanks-line .thanks-name{
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--gold-dark);
+    letter-spacing: 0.3px;
+    margin-left: 2px;
+  }
+
+  .invoice-footer{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+    gap: 10px;
+  }
+  .invoice-footer .footer-left{ text-align:left; }
+  .invoice-footer .footer-right{ text-align:right; }
+  .invoice-footer .signee{
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--black);
+  }
+  .invoice-footer .phone{
+    font-size: 10.5px;
+    color: var(--black);
+    opacity: 0.7;
+    margin-top: 1px;
+  }
+  .invoice-footer .eco-line{
+    color: var(--green);
+    font-size: 10.5px;
+    font-style: italic;
+    font-weight: 500;
+  }
+
+
+
+  /* Post-invoice action buttons (outside capture area, not printed) */
+  .invoice-actions{
+    padding: 18px 16px 4px;
+  }
+  .download-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .toast{
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--black);
+    color: var(--white);
+    padding: 12px 20px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 999;
+    max-width: 88%;
+    text-align:center;
+  }
+  .toast.show{
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Print rules: only the invoice capture area prints */
+  @media print{
+    body *{ visibility: hidden; }
+    #invoiceCapture, #invoiceCapture *{ visibility: visible; }
+    #invoiceCapture{
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      box-shadow: none !important;
+    }
+    .invoice-frame{ border-color: var(--gold) !important; }
+  }
+
+  @media (min-width: 480px){
+    .row-grid{ grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ============================================================
+       FORM SCREEN
+       ============================================================ -->
+  <div id="formScreen">
+
+    <div class="masthead">
+      <div class="kicker">Est. Fine Catering</div>
+      <h1 id="senderNameDisplay1">BANJAARA'S CATERING</h1>
+      <div class="tagline">Compromise on health why?</div>
+      <div class="subtag">Electronic Bill</div>
+      <div class="coin-chip"><span class="coin-icon">🪙</span> <span id="coinBalanceDisplay">0</span> Coins</div>
+      <div class="watch-ad-link" id="watchAdLink">Watch an ad &rarr; +10 coins</div>
+    </div>
+
+    <!-- Sender Name (set once, applies everywhere) -->
+    <div class="card sender-name-card">
+      <h2 class="card-title"><span class="num-badge">0</span> Sender Name</h2>
+      <div class="field">
+        <label for="senderNameInput">Business / Sender Name</label>
+        <input type="text" id="senderNameInput" placeholder="e.g. BANJAARA'S CATERING" autocomplete="off">
+      </div>
+    </div>
+
+
+    <div class="theme-switcher" role="group" aria-label="Bill color scheme">
+      <button type="button" class="theme-swatch active" data-swatch="current" data-theme-value="current" title="Current (default)" aria-label="Current color scheme"></button>
+      <button type="button" class="theme-swatch" data-swatch="red" data-theme-value="red" title="Red + White + Black" aria-label="Red, white and black color scheme"></button>
+      <button type="button" class="theme-swatch" data-swatch="orange" data-theme-value="orange" title="Orange + White" aria-label="Orange and white color scheme"></button>
+      <button type="button" class="theme-swatch" data-swatch="mono" data-theme-value="mono" title="Black & White" aria-label="Black and white color scheme"></button>
+      <button type="button" class="theme-swatch" data-swatch="redblack" data-theme-value="redblack" title="Red & Black" aria-label="Red and black color scheme"></button>
+    </div>
+
+    <!-- Customer details -->
+    <div class="card">
+      <h2 class="card-title"><span class="num-badge">1</span> Customer Details</h2>
+      <div class="field">
+        <label for="custName">Billed To (Customer Name) *</label>
+        <input type="text" id="custName" placeholder="e.g. BIO TECH" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="custPhone">Customer Phone Number (Optional)</label>
+        <input type="tel" id="custPhone" placeholder="e.g. 0323-0007773" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="totalArrears">Total Arrears (Optional)</label>
+        <input type="number" id="totalArrears" min="0" step="0.001" placeholder="0.000" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label for="paidOnDate">Paid On (Optional)</label>
+        <input type="date" id="paidOnDate">
+      </div>
+      <div class="field">
+        <label for="duePayments">Paid Amount (Optional)</label>
+        <input type="number" id="duePayments" min="0" step="0.001" placeholder="0.000" inputmode="decimal">
+      </div>
+    </div>
+
+    <!-- Bill entries -->
+    <div class="card">
+      <h2 class="card-title"><span class="num-badge">2</span> Bill Entries</h2>
+      <div id="rowsContainer"></div>
+
+      <div class="rows-footer">
+        <span class="rows-count" id="rowsCount">0 / 30 rows</span>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-add" id="addRowBtn" type="button">+ Add Row</button>
+      </div>
+      <div class="error-text" id="formError"></div>
+    </div>
+
+    <button class="btn btn-gold" id="generateBtn" type="button">✦ Generate Bill</button>
+
+  </div>
+
+  <!-- ============================================================
+       INVOICE SCREEN
+       ============================================================ -->
+  <div id="invoiceScreen">
+
+    <div class="invoice-wrap">
+      <div id="invoiceCapture">
+        <div class="stamp-edge stamp-edge-top" id="stampDotsTop"></div>
+        <div class="invoice-frame">
+
+          <div class="invoice-head-row">
+            <div class="invoice-head-left">
+              <h1 id="senderNameDisplay2">BANJAARA'S CATERING</h1>
+              <div class="tagline">Compromise on health why?</div>
+            </div>
+            <div class="invoice-head-right">
+              <div class="ebill-label">ELECTRONIC BILL</div>
+              <div class="meta-row"><span class="pl-label">Invoice #:</span> <span id="metaInvoiceNum">BC-2026-0000</span></div>
+              <div class="meta-row"><span class="pl-label">Date:</span> <span id="metaDate">1-Jan-2026</span></div>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <div class="info-left">
+              <div class="plain-line pl-label">Billed To:</div>
+              <div class="bt-name" id="btName">Customer Name</div>
+              <div class="plain-line" id="btPhoneLine" style="display:none;"><span class="pl-label">Ph:</span> <span id="btPhone"></span></div>
+            </div>
+            <div class="info-right">
+              <div class="plain-line"><span class="pl-label">Total Count of Roti/Chapati/Naan:</span> <span id="totalCount">0</span></div>
+            </div>
+          </div>
+
+          <div class="invoice-table-wrap">
+            <table class="invoice-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Item Type</th>
+                  <th class="col-num">Quantity</th>
+                  <th class="col-num">Unit Price<br>(PKR)</th>
+                  <th class="col-num">Amount<br>(PKR)</th>
+                </tr>
+              </thead>
+              <tbody id="invoiceTableBody">
+                <!-- rows injected here -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="grand-total-line">
+            <span class="pl-label">Total Payable (PKR):</span> <span id="grandTotal">0.00</span>
+          </div>
+
+          <div class="due-line">
+            <span class="pl-label">Total Arrears (PKR):</span> <span id="dueAmount">0.000</span>
+          </div>
+
+          <div class="due-line" id="paidOnLine" style="display:none;">
+            <span class="pl-label">Paid On <span id="paidOnDateDisplay"></span>:</span> <span id="paidOnAmount">@Rs 0</span>
+          </div>
+
+          <div class="thanks-line">THANK YOU <span class="thanks-name" id="thanksName"></span></div>
+
+          <div class="invoice-footer">
+            <div class="footer-left">
+              <div class="signee">Syed Tanveer Hussain</div>
+              <div class="phone">Ph: 03230007773</div>
+            </div>
+            <div class="footer-right">
+              <div class="eco-line">Save Paper Save the World!</div>
+            </div>
+          </div>
+
+        </div>
+        <div class="stamp-edge stamp-edge-bottom" id="stampDotsBottom"></div>
+      </div>
+    </div>
+
+    <div class="invoice-actions">
+      <div class="download-grid">
+        <button class="btn btn-ghost" id="downloadPngBtn" type="button">⬇ PNG</button>
+        <button class="btn btn-ghost" id="downloadJpgBtn" type="button">⬇ JPG</button>
+      </div>
+      <button class="btn btn-ghost btn-block" id="printBtn" type="button" style="margin-bottom:10px;">🖨 Print Bill</button>
+      <button class="btn btn-whatsapp btn-block" id="whatsappBtn" type="button" style="display:none; margin-bottom:10px;">💬 Send Bill to WhatsApp</button>
+      <button class="btn btn-add btn-block" id="newBillBtn" type="button">+ Create New Bill</button>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- html2canvas for image export (loaded from CDN; app still works offline for all core features except image export/print which need this) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     COLOR SCHEME SWITCHER
+     "current" is the default scheme and needs no data-theme attribute
+     (it's what :root already defines). Choice persists per-device.
+     ============================================================ */
+  const THEME_STORAGE_KEY = 'banjaaras_color_theme';
+  const htmlEl = document.documentElement;
+  const themeSwatches = document.querySelectorAll('.theme-swatch');
+
+  function applyTheme(themeValue){
+    if(themeValue && themeValue !== 'current'){
+      htmlEl.setAttribute('data-theme', themeValue);
+    }else{
+      htmlEl.removeAttribute('data-theme');
+    }
+    themeSwatches.forEach(function(sw){
+      sw.classList.toggle('active', sw.dataset.themeValue === themeValue);
+    });
+  }
+
+  let savedTheme = 'current';
+  try{
+    savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || 'current';
+  }catch(e){ /* storage unavailable — fall back to default */ }
+  applyTheme(savedTheme);
+
+  themeSwatches.forEach(function(sw){
+    sw.addEventListener('click', function(){
+      const chosen = sw.dataset.themeValue;
+      applyTheme(chosen);
+      try{
+        localStorage.setItem(THEME_STORAGE_KEY, chosen);
+      }catch(e){ /* storage unavailable — theme still applies for this session */ }
+    });
+  });
+
+  /* ============================================================
+     STATE
+     ============================================================ */
+  const MAX_ROWS = 30;
+  let rowCounter = 0;              // unique id generator for rows
+  const rows = [];                 // { id, dateEl, typeEl, qtyEl, priceEl, amountEl, wrapEl }
+  const typePrices = {};           // { 'Roti': '15', 'Naan': '20', ... } last price entered per item type
+
+  const rowsContainer = document.getElementById('rowsContainer');
+  const rowsCountLabel = document.getElementById('rowsCount');
+  const addRowBtn = document.getElementById('addRowBtn');
+  const generateBtn = document.getElementById('generateBtn');
+  const formError = document.getElementById('formError');
+  const toastEl = document.getElementById('toast');
+
+  /* ============================================================
+     UTILITIES
+     ============================================================ */
+  function todayISO(){
+    const d = new Date();
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    return d.getFullYear() + '-' + mm + '-' + dd;
+  }
+
+  function formatDateReadable(isoStr){
+    // Converts "2026-08-10" -> "10-Aug-2026"
+    if(!isoStr) return '';
+    const parts = isoStr.split('-');
+    if(parts.length !== 3) return isoStr;
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const y = parts[0], m = parseInt(parts[1],10)-1, d = parseInt(parts[2],10);
+    return d + '-' + months[m] + '-' + y;
+  }
+
+  function formatDateNumeric(isoStr){
+    // Converts "2026-08-04" -> "4-8-2026"
+    if(!isoStr) return '';
+    const parts = isoStr.split('-');
+    if(parts.length !== 3) return isoStr;
+    const y = parts[0], m = parseInt(parts[1],10), d = parseInt(parts[2],10);
+    return d + '-' + m + '-' + y;
+  }
+
+  function formatMoney(n){
+    return n.toLocaleString('en-PK', { minimumFractionDigits:2, maximumFractionDigits:2 });
+  }
+
+  function formatMoney3(n){
+    return n.toLocaleString('en-PK', { minimumFractionDigits:3, maximumFractionDigits:3 });
+  }
+
+  function addDays(isoStr, n){
+    // Adds n days to an ISO "YYYY-MM-DD" date string and returns a new ISO string.
+    if(!isoStr) return '';
+    const d = new Date(isoStr + 'T00:00:00');
+    d.setDate(d.getDate() + n);
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    return d.getFullYear() + '-' + mm + '-' + dd;
+  }
+
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=> toastEl.classList.remove('show'), 2200);
+  }
+
+  /* ============================================================
+     SENDER NAME (set once, applies everywhere the business name
+     appears — masthead, invoice header, share text, file names).
+     Persists on-device via localStorage.
+     ============================================================ */
+  const SENDER_NAME_KEY = 'banjaaras_sender_name';
+  const DEFAULT_SENDER_NAME = "BANJAARA'S CATERING";
+  const senderNameInput = document.getElementById('senderNameInput');
+  const senderDisplays = [
+    document.getElementById('senderNameDisplay1'),
+    document.getElementById('senderNameDisplay2')
+  ];
+
+  function getSenderName(){
+    const stored = localStorage.getItem(SENDER_NAME_KEY);
+    return (stored && stored.trim()) ? stored.trim() : DEFAULT_SENDER_NAME;
+  }
+
+  function applySenderName(name){
+    const display = (name && name.trim()) ? name.trim().toUpperCase() : DEFAULT_SENDER_NAME;
+    senderDisplays.forEach(function(el){
+      if(el) el.textContent = display;
+    });
+    document.title = display + ' \u2014 Electronic Bill';
+  }
+
+  // Load saved sender name on startup
+  (function initSenderName(){
+    const saved = getSenderName();
+    if(senderNameInput) senderNameInput.value = (saved === DEFAULT_SENDER_NAME) ? '' : saved;
+    applySenderName(saved);
+  })();
+
+  // Live-edit: updates everywhere as soon as the user types, no re-entry needed
+  if(senderNameInput){
+    senderNameInput.addEventListener('input', function(){
+      const val = senderNameInput.value.trim();
+      localStorage.setItem(SENDER_NAME_KEY, val);
+      applySenderName(val);
+    });
+  }
+
+  /* ============================================================
+     COIN SYSTEM
+     5 coins are required to generate a bill. Watching a rewarded
+     ad grants 10 coins. Balance persists on-device via localStorage.
+     Talks to the native Android wrapper through window.AndroidAds
+     (injected by the WebView shell) when running as an APK; falls
+     back to a no-op/simulated flow when opened in a plain browser
+     so the page still works during development.
+     ============================================================ */
+  const COIN_BALANCE_KEY = 'banjaaras_coin_balance';
+  const COST_PER_BILL = 5;
+  const REWARD_PER_AD = 10;
+  const coinBalanceDisplay = document.getElementById('coinBalanceDisplay');
+  const watchAdLink = document.getElementById('watchAdLink');
+
+  function getCoinBalance(){
+    const stored = parseInt(localStorage.getItem(COIN_BALANCE_KEY), 10);
+    return isNaN(stored) ? 0 : stored;
+  }
+
+  function setCoinBalance(value){
+    const clamped = Math.max(0, value);
+    localStorage.setItem(COIN_BALANCE_KEY, String(clamped));
+    if(coinBalanceDisplay) coinBalanceDisplay.textContent = String(clamped);
+    return clamped;
+  }
+
+  function addCoins(amount){
+    return setCoinBalance(getCoinBalance() + amount);
+  }
+
+  function spendCoins(amount){
+    return setCoinBalance(getCoinBalance() - amount);
+  }
+
+  // Refresh the displayed balance on load
+  setCoinBalance(getCoinBalance());
+
+  // Called by the native Android app after a rewarded ad finishes successfully.
+  // Exposed on window so the WebView's JS-bridge can invoke it directly.
+  window.onRewardedAdEarned = function(){
+    addCoins(REWARD_PER_AD);
+    showToast('+' + REWARD_PER_AD + ' coins added!');
+  };
+
+  window.onRewardedAdFailed = function(){
+    showToast('Ad could not be loaded. Please try again.');
+  };
+
+  function requestRewardedAd(){
+    if(window.AndroidAds && typeof window.AndroidAds.showRewardedAd === 'function'){
+      window.AndroidAds.showRewardedAd();
+    }else{
+      // Not running inside the Android app (e.g. testing in a desktop browser)
+      showToast('Ads are only available in the app.');
+    }
+  }
+
+  if(watchAdLink){
+    watchAdLink.addEventListener('click', requestRewardedAd);
+  }
+
+ /* ============================================================
+     INVOICE NUMBER GENERATION
+     Sequential per-device counter stored in localStorage,
+     formatted like BC-2026-0001, BC-2026-0002 ...
+     Falls back to a random number if storage is unavailable.
+     ============================================================ */
+  function getNextInvoiceNumber(){
+    const year = new Date().getFullYear();
+    const storageKey = 'banjaaras_invoice_counter_' + year;
+    let next = 1;
+    try{
+      const stored = localStorage.getItem(storageKey);
+      next = stored ? (parseInt(stored,10) + 1) : 1;
+      localStorage.setItem(storageKey, String(next));
+    }catch(e){
+      // Storage unavailable (e.g. private browsing) — use a random 4-digit fallback
+      next = Math.floor(1000 + Math.random()*9000);
+    }
+    const padded = String(next).padStart(4,'0');
+    return 'BC-' + year + '-' + padded;
+  }
+
+  /* ============================================================
+     ROW MANAGEMENT
+     ============================================================ */
+  function createRow(){
+    if(rows.length >= MAX_ROWS){
+      showToast('Maximum of 30 rows reached');
+      return;
+    }
+
+    rowCounter++;
+    const id = rowCounter;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'bill-row';
+    wrap.dataset.rowId = id;
+
+    wrap.innerHTML =
+      '<span class="row-index">Row ' + (rows.length+1) + '</span>' +
+      '<button class="row-delete" type="button" aria-label="Delete row" title="Delete row">✕</button>' +
+      '<div class="row-grid">' +
+        '<div class="field span-2">' +
+          '<label>Date</label>' +
+          '<input type="date" class="row-date">' +
+        '</div>' +
+        '<div class="field">' +
+          '<label>Item Type</label>' +
+          '<select class="row-type">' +
+            '<option value="Roti">Roti</option>' +
+            '<option value="Chapati">Chapati</option>' +
+            '<option value="Naan">Naan</option>' +
+            '<option value="Custom">Custom</option>' +
+          '</select>' +
+        '</div>' +
+        '<div class="field">' +
+          '<label>Quantity</label>' +
+          '<input type="number" class="row-qty" min="0" placeholder="0" inputmode="numeric">' +
+        '</div>' +
+        '<div class="field span-2 row-custom-field" style="display:none;">' +
+          '<label>Custom Item Name</label>' +
+          '<input type="text" class="row-custom-name" placeholder="e.g. Karahi, Biryani">' +
+        '</div>' +
+        '<div class="field span-2">' +
+          '<label>Unit Price (PKR)</label>' +
+          '<input type="number" class="row-price" min="0" step="0.01" placeholder="0.00" inputmode="decimal">' +
+        '</div>' +
+      '</div>' +
+      '<div class="row-amount">' +
+        '<span class="amt-label">Amount</span>' +
+        '<span class="amt-value row-amt-value">PKR 0.00</span>' +
+      '</div>';
+
+    rowsContainer.appendChild(wrap);
+
+    const dateEl = wrap.querySelector('.row-date');
+    const typeEl = wrap.querySelector('.row-type');
+    const qtyEl = wrap.querySelector('.row-qty');
+    const priceEl = wrap.querySelector('.row-price');
+    const amtValueEl = wrap.querySelector('.row-amt-value');
+    const deleteBtn = wrap.querySelector('.row-delete');
+    const customFieldEl = wrap.querySelector('.row-custom-field');
+    const customNameEl = wrap.querySelector('.row-custom-name');
+
+    // Show/hide the "Custom Item Name" field depending on whether
+    // "Custom" is the selected item type for this row.
+    function syncCustomFieldVisibility(){
+      if(typeEl.value === 'Custom'){
+        customFieldEl.style.display = 'block';
+      }else{
+        customFieldEl.style.display = 'none';
+        customNameEl.classList.remove('field-error');
+      }
+    }
+
+    // Row 1 always defaults to today's date (auto-updates daily since this
+    // is computed fresh on load/creation). Every subsequent new row starts
+    // one day after the previous row's date, e.g. Row1 = 3-Aug, Row2 = 4-Aug.
+    if(rows.length === 0){
+      dateEl.value = todayISO();
+    }else{
+      const prevRow = rows[rows.length - 1];
+      dateEl.value = prevRow.dateEl.value ? addDays(prevRow.dateEl.value, 1) : todayISO();
+    }
+
+    // A newly added row starts with the price already set for its item
+    // type (e.g. every "Roti" row shares one price), if one exists yet.
+    if(typePrices[typeEl.value] !== undefined){
+      priceEl.value = typePrices[typeEl.value];
+    }
+
+    const rowObj = { id, wrap, dateEl, typeEl, qtyEl, priceEl, amtValueEl, customNameEl, dateTouched: false };
+    rows.push(rowObj);
+
+    // Set initial visibility of the custom-name field for this row.
+    syncCustomFieldVisibility();
+
+    // Whenever a row's date is changed by hand, cascade +1 day forward into
+    // every later row that the user hasn't manually edited themselves.
+    dateEl.addEventListener('input', function(){
+      rowObj.dateTouched = true;
+      const idx = rows.findIndex(r => r.id === id);
+      cascadeDatesFrom(idx);
+    });
+
+    function recalcRow(){
+      const qty = parseFloat(qtyEl.value) || 0;
+      const price = parseFloat(priceEl.value) || 0;
+      const amt = qty * price;
+      amtValueEl.textContent = 'PKR ' + formatMoney(amt);
+      qtyEl.classList.remove('field-error');
+      priceEl.classList.remove('field-error');
+    }
+
+    qtyEl.addEventListener('input', recalcRow);
+
+    customNameEl.addEventListener('input', function(){
+      customNameEl.classList.remove('field-error');
+    });
+
+    // If this row's item type is switched, adopt whatever price is already
+    // set for that type elsewhere on the bill (if any), and show/hide the
+    // custom item name field as needed.
+    typeEl.addEventListener('change', function(){
+      const t = typeEl.value;
+      syncCustomFieldVisibility();
+      if(t !== 'Custom' && typePrices[t] !== undefined){
+        priceEl.value = typePrices[t];
+        recalcRow();
+      }
+    });
+
+    priceEl.addEventListener('input', function(){
+      recalcRow();
+
+      // Editing the price on any row instantly syncs that price to every
+      // other row sharing the same item type (e.g. edit one Roti row and
+      // all other Roti rows update to match). "Custom" rows are excluded
+      // since each custom entry (Karahi, Biryani, etc.) is its own dish
+      // with its own price.
+      const t = typeEl.value;
+      if(t === 'Custom') return;
+      const valueToSync = priceEl.value;
+      typePrices[t] = valueToSync;
+      rows.forEach(function(r){
+        if(r.id !== rowObj.id && r.typeEl.value === t){
+          r.priceEl.value = valueToSync;
+          const rQty = parseFloat(r.qtyEl.value) || 0;
+          const rPrice = parseFloat(r.priceEl.value) || 0;
+          r.amtValueEl.textContent = 'PKR ' + formatMoney(rQty * rPrice);
+          r.priceEl.classList.remove('field-error');
+        }
+      });
+    });
+
+    deleteBtn.addEventListener('click', function(){
+      const idx = rows.findIndex(r => r.id === id);
+      if(idx > -1){
+        rows.splice(idx,1);
+        wrap.remove();
+        renumberRows();
+        updateRowsUI();
+      }
+    });
+
+    renumberRows();
+    updateRowsUI();
+  }
+
+  function cascadeDatesFrom(index){
+    // Every row after `index` that hasn't been manually edited gets set to
+    // one day after the row directly above it, so the chain stays in sync.
+    for(let i = index + 1; i < rows.length; i++){
+      if(rows[i].dateTouched) continue;
+      const prevDate = rows[i-1].dateEl.value;
+      if(prevDate){
+        rows[i].dateEl.value = addDays(prevDate, 1);
+      }
+    }
+  }
+
+  function renumberRows(){
+    rows.forEach(function(r, i){
+      const badge = r.wrap.querySelector('.row-index');
+      badge.textContent = 'Row ' + (i+1);
+    });
+  }
+
+  function updateRowsUI(){
+    rowsCountLabel.textContent = rows.length + ' / ' + MAX_ROWS + ' rows';
+    addRowBtn.disabled = rows.length >= MAX_ROWS;
+    addRowBtn.textContent = rows.length >= MAX_ROWS ? 'Maximum 30 Rows Reached' : '+ Add Row';
+  }
+
+  addRowBtn.addEventListener('click', createRow);
+
+  /* ============================================================
+     VALIDATION
+     ============================================================ */
+  function validateForm(){
+    let valid = true;
+    let errorMsg = '';
+
+    const custNameEl = document.getElementById('custName');
+    custNameEl.classList.remove('field-error');
+
+    if(!custNameEl.value.trim()){
+      custNameEl.classList.add('field-error');
+      errorMsg = 'Please enter the customer name.';
+      valid = false;
+    }
+
+    if(rows.length === 0){
+      errorMsg = errorMsg || 'Please add at least one bill row.';
+      valid = false;
+    }
+
+    rows.forEach(function(r){
+      const qty = parseFloat(r.qtyEl.value);
+      const price = parseFloat(r.priceEl.value);
+      let rowInvalid = false;
+
+      if(!qty || qty <= 0){
+        r.qtyEl.classList.add('field-error');
+        rowInvalid = true;
+      }
+      if(!price || price <= 0){
+        r.priceEl.classList.add('field-error');
+        rowInvalid = true;
+      }
+      if(r.typeEl.value === 'Custom' && !r.customNameEl.value.trim()){
+        r.customNameEl.classList.add('field-error');
+        rowInvalid = true;
+        errorMsg = errorMsg || 'Please name every "Custom" item (e.g. Karahi, Biryani).';
+      }
+      if(rowInvalid){
+        valid = false;
+        errorMsg = errorMsg || 'Every row needs a quantity and unit price greater than 0.';
+      }
+    });
+
+    if(!valid){
+      formError.textContent = errorMsg;
+      formError.style.display = 'block';
+    }else{
+      formError.style.display = 'none';
+    }
+
+    return valid;
+  }
+
+  /* ============================================================
+     GENERATE INVOICE
+     ============================================================ */
+  let currentInvoiceNumber = null;
+  let lastCustName = '';
+  let lastCustPhone = '';
+  let lastGrandTotal = 0;
+  let lastPaidAmount = 0;
+  let lastTotalArrears = 0;
+
+  generateBtn.addEventListener('click', function(){
+    if(!validateForm()) return;
+
+    if(getCoinBalance() < COST_PER_BILL){
+      showToast('Not enough coins. Watch an ad to earn ' + REWARD_PER_AD + ' coins.');
+      requestRewardedAd();
+      return;
+    }
+    spendCoins(COST_PER_BILL);
+
+    const custName = document.getElementById('custName').value.trim();
+    const custPhone = document.getElementById('custPhone').value.trim();
+
+    // Build data rows. For "Custom" rows, the item type shown on the
+    // invoice is whatever the user typed (e.g. Karahi, Biryani).
+    const data = rows.map(function(r){
+      const qty = parseFloat(r.qtyEl.value) || 0;
+      const price = parseFloat(r.priceEl.value) || 0;
+      const displayType = (r.typeEl.value === 'Custom')
+        ? (r.customNameEl.value.trim() || 'Custom')
+        : r.typeEl.value;
+      return {
+        date: r.dateEl.value,
+        type: displayType,
+        qty: qty,
+        price: price,
+        amount: qty * price
+      };
+    });
+
+    const totalCount = data.reduce(function(sum,d){ return sum + d.qty; }, 0);
+    const billItemsTotal = data.reduce(function(sum,d){ return sum + d.amount; }, 0);
+
+    currentInvoiceNumber = getNextInvoiceNumber();
+
+    // Populate invoice screen
+    document.getElementById('metaInvoiceNum').textContent = currentInvoiceNumber;
+    document.getElementById('metaDate').textContent = formatDateReadable(todayISO());
+    document.getElementById('btName').textContent = custName;
+    document.getElementById('thanksName').textContent = custName;
+
+    const btPhoneLineEl = document.getElementById('btPhoneLine');
+    if(custPhone){
+      document.getElementById('btPhone').textContent = custPhone;
+      btPhoneLineEl.style.display = 'block';
+    }else{
+      btPhoneLineEl.style.display = 'none';
+    }
+
+    document.getElementById('totalCount').textContent = totalCount;
+
+    // "Total Arrears" is entered manually and is ADDED to the Grand Total.
+    const totalArrearsRaw = parseFloat(document.getElementById('totalArrears').value);
+    const totalArrears = isNaN(totalArrearsRaw) || totalArrearsRaw < 0 ? 0 : totalArrearsRaw;
+    document.getElementById('dueAmount').textContent = formatMoney3(totalArrears);
+
+    // "Paid Amount" is entered manually and is SUBTRACTED from the Grand Total.
+    const paidAmountRaw = parseFloat(document.getElementById('duePayments').value);
+    const paidAmount = isNaN(paidAmountRaw) || paidAmountRaw < 0 ? 0 : paidAmountRaw;
+
+    const grandTotal = Math.max(billItemsTotal + totalArrears - paidAmount, 0);
+    document.getElementById('grandTotal').textContent = formatMoney(grandTotal);
+
+    const paidOnDate = document.getElementById('paidOnDate').value;
+    const paidOnLineEl = document.getElementById('paidOnLine');
+    if(paidAmount > 0){
+      document.getElementById('paidOnDateDisplay').textContent = paidOnDate ? formatDateNumeric(paidOnDate) : formatDateNumeric(todayISO());
+      document.getElementById('paidOnAmount').textContent = '@Rs ' + formatMoney3(paidAmount);
+      paidOnLineEl.style.display = 'flex';
+    }else{
+      paidOnLineEl.style.display = 'none';
+    }
+
+    lastCustName = custName;
+    lastCustPhone = custPhone;
+    lastGrandTotal = grandTotal;
+    lastPaidAmount = paidAmount;
+    lastTotalArrears = totalArrears;
+
+    const whatsappBtnEl = document.getElementById('whatsappBtn');
+    if(custPhone){
+      whatsappBtnEl.style.display = 'flex';
+    }else{
+      whatsappBtnEl.style.display = 'none';
+    }
+
+    const tbody = document.getElementById('invoiceTableBody');
+    tbody.innerHTML = '';
+    data.forEach(function(d){
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + formatDateReadable(d.date) + '</td>' +
+        '<td>' + d.type + '</td>' +
+        '<td class="col-num">' + d.qty + '</td>' +
+        '<td class="col-num">' + formatMoney(d.price) + '</td>' +
+        '<td class="col-num amount-cell">' + formatMoney(d.amount) + '</td>';
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('formScreen').style.display = 'none';
+    document.getElementById('invoiceScreen').style.display = 'block';
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  /* ============================================================
+     SEND BILL TO WHATSAPP
+     ============================================================ */
+  function normalizePhoneForWhatsapp(phone){
+    let digits = phone.replace(/\D/g, '');
+    if(digits.startsWith('0')){
+      digits = '92' + digits.substring(1); // Pakistan local -> international
+    }else if(!digits.startsWith('92')){
+      digits = '92' + digits;
+    }
+    return digits;
+  }
+
+  document.getElementById('whatsappBtn').addEventListener('click', function(){
+    if(!lastCustPhone){
+      showToast('No customer phone number on this bill.');
+      return;
+    }
+    showToast('Preparing invoice image...');
+    withHiddenActions(function(){
+      renderCanvas(3).then(function(canvas){
+        canvas.toBlob(function(blob){
+          if(!blob){
+            showToast('Could not generate the invoice image.');
+            return;
+          }
+          const fileName = (currentInvoiceNumber || 'Invoice-Bill') + '.jpg';
+          const file = new File([blob], fileName, { type: 'image/jpeg' });
+          const shareText = 'Invoice ' + currentInvoiceNumber + ' \u2014 ' + getSenderName() + '. Total Payable: PKR ' +
+            formatMoney(lastGrandTotal) +
+            (lastPaidAmount > 0 ? ('. Paid: PKR ' + formatMoney3(lastPaidAmount)) : '') +
+            (lastTotalArrears > 0 ? ('. Total Arrears: PKR ' + formatMoney3(lastTotalArrears)) : '') +
+            '. Thank you!';
+
+          if(navigator.canShare && navigator.canShare({ files: [file] })){
+            // Opens the native share sheet so the actual JPG invoice can be
+            // sent straight into a WhatsApp chat (not just text).
+            navigator.share({
+              files: [file],
+              title: getSenderName() + ' Invoice',
+              text: shareText
+            }).catch(function(err){
+              if(err && err.name !== 'AbortError'){
+                showToast('Could not open the share sheet.');
+              }
+            });
+          }else{
+            // Fallback for browsers without file-sharing support (mostly
+            // desktop): download the JPG, then open the WhatsApp chat so
+            // the image can be attached manually in one extra tap.
+            const link = document.createElement('a');
+            link.download = fileName;
+            link.href = canvas.toDataURL('image/jpeg', 0.97);
+            link.click();
+
+            const waNumber = normalizePhoneForWhatsapp(lastCustPhone);
+            const url = 'https://wa.me/' + waNumber + '?text=' + encodeURIComponent(shareText + ' (Invoice image downloaded \u2014 please attach it here.)');
+            window.open(url, '_blank');
+            showToast('Invoice image downloaded \u2014 attach it in WhatsApp.');
+          }
+        }, 'image/jpeg', 0.97);
+      }).catch(function(){
+        showToast('Could not generate the invoice image.');
+      });
+    });
+  });
+
+  /* ============================================================
+     NEW BILL (reset)
+     ============================================================ */
+  document.getElementById('newBillBtn').addEventListener('click', function(){
+    document.getElementById('custName').value = '';
+    document.getElementById('custPhone').value = '';
+    document.getElementById('totalArrears').value = '';
+    document.getElementById('paidOnDate').value = '';
+    document.getElementById('duePayments').value = '';
+    document.getElementById('custName').classList.remove('field-error');
+    document.getElementById('whatsappBtn').style.display = 'none';
+    formError.style.display = 'none';
+
+    rows.length = 0;
+    rowsContainer.innerHTML = '';
+    createRow();
+
+    document.getElementById('invoiceScreen').style.display = 'none';
+    document.getElementById('formScreen').style.display = 'block';
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  /* ============================================================
+     DOWNLOAD / PRINT
+     ============================================================ */
+  function getCaptureNode(){
+    return document.getElementById('invoiceCapture');
+  }
+
+  function withHiddenActions(fn){
+    // Nothing to hide currently since actions live outside the capture node,
+    // but kept as an extension point / safety wrapper.
+    return fn();
+  }
+
+  function renderCanvas(scale){
+    const node = getCaptureNode();
+    // Match the export background to whichever color scheme is active so
+    // there's no white sliver around the bill when exporting the black
+    // background scheme.
+    const exportBg = getComputedStyle(htmlEl).getPropertyValue('--white').trim() || '#FFFFFF';
+    return html2canvas(node, {
+      scale: scale || 3,
+      backgroundColor: exportBg,
+      useCORS: true,
+      logging: false
+    });
+  }
+
+  document.getElementById('downloadPngBtn').addEventListener('click', function(){
+    showToast('Preparing high-quality PNG...');
+    withHiddenActions(function(){
+      renderCanvas(3).then(function(canvas){
+        const link = document.createElement('a');
+        link.download = (currentInvoiceNumber || 'Invoice-Bill') + '.png';
+        link.href = canvas.toDataURL('image/png', 1.0);
+        link.click();
+        showToast('PNG downloaded');
+      }).catch(function(){
+        showToast('Could not generate PNG. Check your connection.');
+      });
+    });
+  });
+
+  document.getElementById('downloadJpgBtn').addEventListener('click', function(){
+    showToast('Preparing high-quality JPG...');
+    withHiddenActions(function(){
+      renderCanvas(3).then(function(canvas){
+        // JPG needs a solid white background (no transparency support)
+        const link = document.createElement('a');
+        link.download = (currentInvoiceNumber || 'Invoice-Bill') + '.jpg';
+        link.href = canvas.toDataURL('image/jpeg', 0.97);
+        link.click();
+        showToast('JPG downloaded');
+      }).catch(function(){
+        showToast('Could not generate JPG. Check your connection.');
+      });
+    });
+  });
+
+  document.getElementById('printBtn').addEventListener('click', function(){
+    window.print();
+  });
+
+  /* ============================================================
+     INITIAL SETUP
+     ============================================================ */
+  function renderStampDots(){
+    // Builds the top/bottom perforation from real dot elements (laid out
+    // with flexbox space-between) instead of a CSS gradient background,
+    // so html2canvas captures them correctly in the JPG/PNG export.
+    const DOT_COUNT = 20;
+    ['stampDotsTop', 'stampDotsBottom'].forEach(function(id){
+      const el = document.getElementById(id);
+      if(!el) return;
+      el.innerHTML = '';
+      for(let i = 0; i < DOT_COUNT; i++){
+        const dot = document.createElement('span');
+        dot.className = 'stamp-dot';
+        el.appendChild(dot);
+      }
+    });
+  }
+
+  renderStampDots();
+  createRow(); // start with one row visible
+
+})();
+</script>
+
+</body>
+</html>
