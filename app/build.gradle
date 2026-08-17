@@ -1,0 +1,36 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.banjaaras.billing'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.banjaaras.billing"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        debug {
+            // Debug build only — this is what the GitHub Actions workflow
+            // produces. No release signing is configured. To publish on the
+            // Play Store later, add a release signingConfig with your own
+            // keystore.
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.gms:play-services-ads:23.3.0'
+}
